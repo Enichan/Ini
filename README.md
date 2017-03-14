@@ -3,6 +3,8 @@ Ini file reader and writer for C# written in pure .NET.
 
 Supports bools (case insensitive true/false), integers, doubles, and strings. Strings can have whitespace preserved or not, and can have exterior quotes or not. Defaults to case insensitive string comparisons for keys (section names and variable names), but this can be changed by changing the StringComparer field, or by changing IniFile.DefaultStringComparer for all future instances.
 
+Comments are ignored and not saved. Inline comments at the end of values are not supported.
+
 # Saving
 ```csharp
 var ini = new IniFile();
