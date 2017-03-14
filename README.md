@@ -13,7 +13,6 @@ Attempting to retrieve missing sections or values through indexing will not thro
 ```csharp
 var ini = new IniFile();
 
-ini.Add("test1");
 ini["test1"]["boolA"] = true;
 ini["test1"]["boolB"] = false;
 ini["test1"]["boolC"] = "TRUE";
@@ -24,7 +23,6 @@ ini["test1"]["doubleA"] = 0.238471;
 ini["test1"]["doubleB"] = "not a double";
 ini["test1"]["doubleC"] = "NaN";
 
-ini.Add("test2");
 ini["test2"]["str"] = "normal string";
 ini["test2"]["quotstr"] = "\"quoted string\"";
 ini["test2"]["wstr"] = "    whitespace string    ";
