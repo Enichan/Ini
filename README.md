@@ -1,2 +1,58 @@
 # Ini
-Ini file reader/writer for C# / .NET written in pure .NET
+Ini file reader and writer for C# written in pure .NET.
+
+Supports bools (case insensitive true/false), integers, doubles, and strings. Strings can have whitespace preserved or not, and can have exterior quotes or not. Defaults to case insensitive string comparisons for keys (section names and variable names), but this can be changed by changing the StringComparer field, or by changing IniFile.DefaultStringComparer for all future instances.
+
+# Saving
+```csharp
+var ini = new IniFile();
+
+ini.Add("test1");
+ini["test1"]["boolA"] = true;
+ini["test1"]["boolB"] = false;
+ini["test1"]["boolC"] = "TRUE";
+ini["test1"]["boolD"] = "FALSE";
+ini["test1"]["intA"] = 8;
+ini["test1"]["intB"] = "not an int";
+ini["test1"]["doubleA"] = 0.238471;
+ini["test1"]["doubleB"] = "not a double";
+ini["test1"]["doubleC"] = "NaN";
+
+ini.Add("test2");
+ini["test2"]["str"] = "normal string";
+ini["test2"]["quotstr"] = "\"quoted string\"";
+ini["test2"]["wstr"] = "    whitespace string    ";
+ini["test2"]["wquotstr"] = "      \"      quoted whitespace string     \"     ";
+
+ini.Save("test.ini");
+```
+
+# Loading
+```csharp
+var ini = new IniFile();
+
+ini.Load("test.ini");
+Console.WriteLine(ini.GetContents());
+
+Console.WriteLine(ini["test1"]["boolA"].ToBool());
+Console.WriteLine(ini["test1"]["boolB"].ToBool());
+Console.WriteLine(ini["test1"]["boolC"].ToBool());
+Console.WriteLine(ini["test1"]["boolD"].ToBool());
+Console.WriteLine(ini["test1"]["intA"].ToInt(-1));
+Console.WriteLine(ini["test1"]["intB"].ToInt(-1));
+Console.WriteLine(ini["test1"]["doubleA"].ToDouble(-1));
+Console.WriteLine(ini["test1"]["doubleB"].ToDouble(-1));
+Console.WriteLine(ini["test1"]["doubleC"].ToDouble(-1));
+
+Console.WriteLine(ini["test2"]["str"].GetString());
+Console.WriteLine(ini["test2"]["quotstr"].GetString(true, false));
+Console.WriteLine(ini["test2"]["quotstr"].GetString(false, false));
+Console.WriteLine(ini["test2"]["wstr"].GetString(true));
+Console.WriteLine(ini["test2"]["wstr"].GetString(false));
+Console.WriteLine(ini["test2"]["wquotstr"].GetString(true, false));
+Console.WriteLine(ini["test2"]["wquotstr"].GetString(false, false));
+Console.WriteLine(ini["test2"]["wquotstr"].GetString(true, true));
+Console.WriteLine(ini["test2"]["wquotstr"].GetString(false, true));
+```
+
+If you want to know whether the conversion succeeded instead of supplying a default value for invalid conversions, use TryConvertBool, TryConvertInt, and TryConvertDouble functions.
