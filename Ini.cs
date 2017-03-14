@@ -177,11 +177,16 @@ public struct IniValue {
     public static implicit operator IniValue(string o) {
         return new IniValue(o);
     }
+
+    private static readonly IniValue _default = new IniValue();
+    public static IniValue Default { get { return _default; } }
 }
 
-public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniValue>>> {
-    private Dictionary<string, Dictionary<string, IniValue>> sections;
+public class IniFile : IEnumerable<KeyValuePair<string, IniSection>>, IDictionary<string, IniSection> {
+    private Dictionary<string, IniSection> sections;
     public IEqualityComparer<string> StringComparer;
+
+    public bool SaveEmptySections;
 
     public IniFile() 
         : this(DefaultComparer) {
@@ -189,7 +194,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
 
     public IniFile(IEqualityComparer<string> stringComparer) {
         StringComparer = stringComparer;
-        sections = new Dictionary<string, Dictionary<string, IniValue>>(StringComparer);
+        sections = new Dictionary<string, IniSection>(StringComparer);
     }
 
     public void Save(string path, FileMode mode = FileMode.Create) {
@@ -206,11 +211,13 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
 
     public void Save(StreamWriter writer) {
         foreach (var section in sections) {
-            writer.WriteLine(string.Format("[{0}]", section.Key));
-            foreach (var kvp in section.Value) {
-                writer.WriteLine(string.Format("{0}={1}", kvp.Key, kvp.Value));
+            if (section.Value.Count > 0 || SaveEmptySections) {
+                writer.WriteLine(string.Format("[{0}]", section.Key));
+                foreach (var kvp in section.Value) {
+                    writer.WriteLine(string.Format("{0}={1}", kvp.Key, kvp.Value));
+                }
+                writer.WriteLine("");
             }
-            writer.WriteLine("");
         }
     }
 
@@ -227,7 +234,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
     }
 
     public void Load(StreamReader reader) {
-        Dictionary<string, IniValue> section = null;
+        IniSection section = null;
 
         while (!reader.EndOfStream) {
             var line = reader.ReadLine();
@@ -240,7 +247,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
                         var sectionEnd = trimStart.IndexOf(']');
                         if (sectionEnd > 0) {
                             var sectionName = trimStart.Substring(1, sectionEnd - 1).Trim();
-                            section = new Dictionary<string, IniValue>(StringComparer); ;
+                            section = new IniSection(StringComparer);
                             sections[sectionName] = section;
                         }
                     }
@@ -276,26 +283,74 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
         return sections.ContainsKey(section);
     }
 
-    public bool TryGetSection(string section, out Dictionary<string, IniValue> result) {
+    public bool TryGetSection(string section, out IniSection result) {
         return sections.TryGetValue(section, out result);
+    }
+
+    bool IDictionary<string, IniSection>.TryGetValue(string key, out IniSection value) {
+        return TryGetSection(key, out value);
     }
 
     public bool Remove(string section) {
         return sections.Remove(section);
     }
 
-    public void Add(string section, Dictionary<string, IniValue> value) {
+    public void Add(string section, Dictionary<string, IniValue> values) {
+        Add(section, new IniSection(values, StringComparer));
+    }
+
+    public void Add(string section, IniSection value) {
         if (value.Comparer != StringComparer) {
-            value = new Dictionary<string, IniValue>(value, StringComparer);
+            value = new IniSection(value, StringComparer);
         }
         sections.Add(section, value);
     }
 
     public void Add(string section) {
-        sections.Add(section, new Dictionary<string, IniValue>(StringComparer));
+        sections.Add(section, new IniSection(StringComparer));
     }
 
-    public IEnumerator<KeyValuePair<string, Dictionary<string, IniValue>>> GetEnumerator() {
+    bool IDictionary<string, IniSection>.ContainsKey(string key) {
+        return ContainsSection(key);
+    }
+
+    public ICollection<string> Keys {
+        get { return sections.Keys; }
+    }
+
+    public ICollection<IniSection> Values {
+        get { return Values; }
+    }
+
+    void ICollection<KeyValuePair<string, IniSection>>.Add(KeyValuePair<string, IniSection> item) {
+        ((IDictionary<string, IniSection>)sections).Add(item);
+    }
+
+    public void Clear() {
+        sections.Clear();
+    }
+
+    bool ICollection<KeyValuePair<string, IniSection>>.Contains(KeyValuePair<string, IniSection> item) {
+        return ((IDictionary<string, IniSection>)sections).Contains(item);
+    }
+
+    void ICollection<KeyValuePair<string, IniSection>>.CopyTo(KeyValuePair<string, IniSection>[] array, int arrayIndex) {
+        ((IDictionary<string, IniSection>)sections).CopyTo(array, arrayIndex);
+    }
+
+    public int Count {
+        get { return sections.Count; }
+    }
+
+    bool ICollection<KeyValuePair<string, IniSection>>.IsReadOnly {
+        get { return ((IDictionary<string, IniSection>)sections).IsReadOnly; }
+    }
+
+    bool ICollection<KeyValuePair<string, IniSection>>.Remove(KeyValuePair<string, IniSection> item) {
+        return ((IDictionary<string, IniSection>)sections).Remove(item);
+    }
+
+    public IEnumerator<KeyValuePair<string, IniSection>> GetEnumerator() {
         return sections.GetEnumerator();
     }
 
@@ -303,14 +358,20 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
         return GetEnumerator();
     }
 
-    public Dictionary<string, IniValue> this[string section] {
+    public IniSection this[string section] {
         get {
-            return sections[section];
+            IniSection s;
+            if (sections.TryGetValue(section, out s)) {
+                return s;
+            }
+            s = new IniSection(StringComparer);
+            sections[section] = s;
+            return s;
         }
         set {
             var v = value;
             if (v.Comparer != StringComparer) {
-                v = new Dictionary<string, IniValue>(v, StringComparer);
+                v = new IniSection(v, StringComparer);
             }
             sections[section] = v;
         }
@@ -350,5 +411,116 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
                 return obj.GetHashCode();
             }
 #endif
+    }
+}
+
+public class IniSection : IEnumerable<KeyValuePair<string, IniValue>>, IDictionary<string, IniValue> {
+    private Dictionary<string, IniValue> values;
+
+    public IniSection()
+        : this(IniFile.DefaultComparer) {
+    }
+
+    public IniSection(IEqualityComparer<string> stringComparer) {
+        this.values = new Dictionary<string, IniValue>(stringComparer);
+    }
+
+    public IniSection(Dictionary<string, IniValue> values)
+        : this(values, IniFile.DefaultComparer) {
+    }
+
+    public IniSection(Dictionary<string, IniValue> values, IEqualityComparer<string> stringComparer) {
+        this.values = new Dictionary<string, IniValue>(values, stringComparer);
+    }
+
+    public IniSection(IniSection values)
+        : this(values, IniFile.DefaultComparer) {
+    }
+
+    public IniSection(IniSection values, IEqualityComparer<string> stringComparer) {
+        this.values = new Dictionary<string, IniValue>(values.values, stringComparer);
+    }
+
+    public void Add(string key, IniValue value) {
+        values.Add(key, value);
+    }
+
+    public bool ContainsKey(string key) {
+        return values.ContainsKey(key);
+    }
+
+    public ICollection<string> Keys {
+        get { return values.Keys; }
+    }
+
+    public bool Remove(string key) {
+        return values.Remove(key);
+    }
+
+    public bool TryGetValue(string key, out IniValue value) {
+        return values.TryGetValue(key, out value);
+    }
+
+    public ICollection<IniValue> Values {
+        get { return Values; }
+    }
+
+    void ICollection<KeyValuePair<string, IniValue>>.Add(KeyValuePair<string, IniValue> item) {
+        ((IDictionary<string, IniValue>)values).Add(item);
+    }
+
+    public void Clear() {
+        values.Clear();
+    }
+
+    bool ICollection<KeyValuePair<string, IniValue>>.Contains(KeyValuePair<string, IniValue> item) {
+        return ((IDictionary<string, IniValue>)values).Contains(item);
+    }
+
+    void ICollection<KeyValuePair<string, IniValue>>.CopyTo(KeyValuePair<string, IniValue>[] array, int arrayIndex) {
+        ((IDictionary<string, IniValue>)values).CopyTo(array, arrayIndex);
+    }
+
+    public int Count {
+        get { return values.Count; }
+    }
+
+    bool ICollection<KeyValuePair<string, IniValue>>.IsReadOnly {
+        get { return ((IDictionary<string, IniValue>)values).IsReadOnly; }
+    }
+
+    bool ICollection<KeyValuePair<string, IniValue>>.Remove(KeyValuePair<string, IniValue> item) {
+        return ((IDictionary<string, IniValue>)values).Remove(item);
+    }
+
+    public IEnumerator<KeyValuePair<string, IniValue>> GetEnumerator() {
+        return values.GetEnumerator();
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
+    public IEqualityComparer<string> Comparer { get { return values.Comparer; } }
+
+    public IniValue this[string name] {
+        get {
+            IniValue val;
+            if (values.TryGetValue(name, out val)) {
+                return val;
+            }
+            return IniValue.Default;
+        }
+        set {
+            values[name] = value;
+        }
+    }
+
+    public static implicit operator IniSection(Dictionary<string, IniValue> dict) {
+        return new IniSection(dict);
+    }
+
+    public static explicit operator Dictionary<string, IniValue>(IniSection section) {
+        return section.values;
     }
 }
