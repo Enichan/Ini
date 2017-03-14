@@ -239,7 +239,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, Dictionary<string, IniVa
                     if (trimStart[0] == '[') {
                         var sectionEnd = trimStart.IndexOf(']');
                         if (sectionEnd > 0) {
-                            var sectionName = trimStart.Substring(1, sectionEnd - 1);
+                            var sectionName = trimStart.Substring(1, sectionEnd - 1).Trim();
                             section = new Dictionary<string, IniValue>(StringComparer); ;
                             sections[sectionName] = section;
                         }
