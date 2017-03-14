@@ -212,7 +212,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, IniSection>>, IDictionar
     public void Save(StreamWriter writer) {
         foreach (var section in sections) {
             if (section.Value.Count > 0 || SaveEmptySections) {
-                writer.WriteLine(string.Format("[{0}]", section.Key));
+                writer.WriteLine(string.Format("[{0}]", section.Key.Trim()));
                 foreach (var kvp in section.Value) {
                     writer.WriteLine(string.Format("{0}={1}", kvp.Key, kvp.Value));
                 }
