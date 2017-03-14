@@ -5,7 +5,7 @@ Supports bools (case insensitive true/false), integers, doubles, and strings. St
 
 Comments are ignored and not saved. Inline comments at the end of values are not supported. Anything before the first section is also ignored.
 
-Empty sections are not saved unless SaveEmptySections is set to true.
+Empty sections are not saved unless SaveEmptySections is set to true. Whitespace surrounding section names is removed on save and load. It is not removed while working with an IniFile instance, because this could create undesirable behavior.
 
 Attempting to retrieve missing sections or values through indexing will not throw exceptions.
 
