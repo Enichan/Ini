@@ -40,7 +40,7 @@ public struct IniValue {
             Value = formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture);
         }
         else {
-            Value = value.ToString();
+            Value = value != null ? value.ToString() : null;
         }
     }
 
