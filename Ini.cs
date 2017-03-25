@@ -319,7 +319,7 @@ public class IniFile : IEnumerable<KeyValuePair<string, IniSection>>, IDictionar
     }
 
     public ICollection<IniSection> Values {
-        get { return Values; }
+        get { return sections.Values; }
     }
 
     void ICollection<KeyValuePair<string, IniSection>>.Add(KeyValuePair<string, IniSection> item) {
@@ -462,7 +462,7 @@ public class IniSection : IEnumerable<KeyValuePair<string, IniValue>>, IDictiona
     }
 
     public ICollection<IniValue> Values {
-        get { return Values; }
+        get { return values.Values; }
     }
 
     void ICollection<KeyValuePair<string, IniValue>>.Add(KeyValuePair<string, IniValue> item) {
