@@ -60,3 +60,15 @@ Console.WriteLine(ini["test2"]["wquotstr"].GetString(false, true));
 ```
 
 If you want to know whether the conversion succeeded instead of supplying a default value for invalid conversions, use TryConvertBool, TryConvertInt, and TryConvertDouble functions.
+
+You can also enumerate sections and values within sections:
+
+```csharp
+foreach (var section in ini) {
+    Console.WriteLine(string.Format("Section {0} found, with {1} entries", section.Key, section.Value.Count));
+
+    foreach (var item in section.Value) {
+        Console.WriteLine(string.Format("Item {0} found, value is {1}", item.Key, item.Value));
+    }
+}
+```
