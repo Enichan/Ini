@@ -125,7 +125,7 @@ public struct IniValue {
             return "";
         }
         var trimmed = Value.Trim();
-        if (allowOuterQuotes && trimmed[0] == '"' && trimmed[trimmed.Length - 1] == '"') {
+        if (allowOuterQuotes && trimmed.Length > 0 && trimmed[0] == '"' && trimmed[trimmed.Length - 1] == '"') {
             var inner = trimmed.Substring(1, trimmed.Length - 2);
             return preserveWhitespace ? inner : inner.Trim();
         }
