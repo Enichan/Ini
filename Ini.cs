@@ -401,8 +401,8 @@ public class IniFile : IEnumerable<KeyValuePair<string, IniSection>>, IDictionar
         public new bool Equals(object x, object y) {
             var xs = x as string;
             var ys = y as string;
-            if (x == null || y == null) {
-                return x == null && y == null;
+            if (xs == null || ys == null) {
+                return xs == null && ys == null;
             }
             return Equals(xs, ys);
         }
