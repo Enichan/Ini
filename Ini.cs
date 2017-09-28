@@ -394,22 +394,25 @@ public class IniFile : IEnumerable<KeyValuePair<string, IniSection>>, IDictionar
         }
 
         public int GetHashCode(string obj) {
-            return obj.GetHashCode();
+            return obj.ToLowerInvariant().GetHashCode();
         }
 
 #if JS
-            public new bool Equals(object x, object y) {
-                var xs = x as string;
-                var ys = y as string;
-                if (x == null || y == null) {
-                    return x == null && y == null;
-                }
-                return Equals(xs, ys);
+        public new bool Equals(object x, object y) {
+            var xs = x as string;
+            var ys = y as string;
+            if (x == null || y == null) {
+                return x == null && y == null;
             }
+            return Equals(xs, ys);
+        }
 
-            public int GetHashCode(object obj) {
-                return obj.GetHashCode();
+        public int GetHashCode(object obj) {
+            if (obj is string) {
+                return GetHashCode((string)obj);
             }
+            return obj.ToStringInvariant().ToLowerInvariant().GetHashCode();
+        }
 #endif
     }
 }
