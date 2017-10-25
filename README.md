@@ -1,5 +1,5 @@
 # Ini
-Ini file reader and writer for C# written in pure .NET.
+Ini file reader and writer for C# written in pure .NET in a single source file.
 
 Supports bools (case insensitive true/false), integers, doubles, and strings. Strings can have whitespace preserved or not, and can have exterior quotes or not. Defaults to case insensitive string comparisons for keys (section names and variable names), but this can be changed by changing the StringComparer field, or by changing IniFile.DefaultStringComparer for all future instances.
 
