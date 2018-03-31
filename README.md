@@ -80,3 +80,21 @@ By default sections will not preserve the order of items. In order to preserve t
 Ordered IniSection instances have the following additional methods available: IndexOf, LastIndexOf, Insert, InsertRange, RemoveAt, RemoveRange, Reverse, GetOrderedValues, and can be indexed using integers. Calling these methods on a non-ordered section will result in an InvalidOperationException being thrown.
 
 Take note that the Keys property of an ordered IniSection will be the keys in order, but the Values property does not have the order guaranteed. To get the in-order values of an IniSection use the GetOrderedValues method, or enumerate the section using foreach.
+
+Both ways of iterating over values below are functionally equivalent for a sorted section.
+
+```csharp
+var ini = new IniFile();
+ini.Load("somefile.ini", ordered=true);
+var section = ini.First().Value;
+
+var index = 0;
+foreach (var item in section) {
+    Console.WriteLine(string.Format("Item at index {0} is {1}", index, item.Value.GetString()));
+    index++;
+}
+
+for (var i = 0; i < section.Count; i++) {
+    Console.WriteLine(string.Format("Item at index {0} is {1}", i, section[i].GetString()));
+}
+```
