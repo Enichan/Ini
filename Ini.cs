@@ -593,6 +593,28 @@ public class IniSection : IEnumerable<KeyValuePair<string, IniValue>>, IDictiona
         return list;
     }
 
+    public IniValue this[int index] {
+        get {
+            if (!Ordered) {
+                throw new InvalidOperationException("Cannot index IniSection using integer key: section was not ordered.");
+            }
+            if (index < 0 || index >= orderedKeys.Count) {
+                throw new IndexOutOfRangeException("Index must be within the bounds." + Environment.NewLine + "Parameter name: index");
+            }
+            return values[orderedKeys[index]];
+        }
+        set {
+            if (!Ordered) {
+                throw new InvalidOperationException("Cannot index IniSection using integer key: section was not ordered.");
+            }
+            if (index < 0 || index >= orderedKeys.Count) {
+                throw new IndexOutOfRangeException("Index must be within the bounds." + Environment.NewLine + "Parameter name: index");
+            }
+            var key = orderedKeys[index];
+            values[key] = value;
+        }
+    }
+
     public bool Ordered {
         get {
             return orderedKeys != null;
