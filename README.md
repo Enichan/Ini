@@ -81,7 +81,7 @@ Ordered IniSection instances have the following additional methods available: In
 
 Take note that the Keys property of an ordered IniSection will be the keys in order, but the Values property does not have the order guaranteed. To get the in-order values of an IniSection use the GetOrderedValues method, or enumerate the section using foreach.
 
-Both ways of iterating over values below are functionally equivalent for a sorted section.
+Both ways of iterating over values below are functionally equivalent for an ordered section.
 
 ```csharp
 var ini = new IniFile();
