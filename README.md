@@ -85,7 +85,7 @@ Both ways of iterating over values below are functionally equivalent for an orde
 
 ```csharp
 var ini = new IniFile();
-ini.Load("somefile.ini", ordered=true);
+ini.Load("somefile.ini", ordered: true);
 var section = ini.First().Value;
 
 var index = 0;
